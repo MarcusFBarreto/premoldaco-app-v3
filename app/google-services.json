@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "918710823829",
+    "project_id": "premoldaco-webapp",
+    "storage_bucket": "premoldaco-webapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:918710823829:android:21b9fa773a9c9e6bc9a49c",
+        "android_client_info": {
+          "package_name": "com.pesquisapromo.premoldaco.premoldacoapp.v1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2PsrmbHk_1AVvaoQst01kxOxU1gYSYjU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

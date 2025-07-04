@@ -1,0 +1,18 @@
+# Arquivos gerados pelo sistema de build
+/.gradle
+/build/
+/app/build/
+
+# Arquivos de configuração local
+local.properties
+.idea/
+
+# Arquivos de cache e log
+*.log
+.gradle/
+captures/
+.externalNativeBuild/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
