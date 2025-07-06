@@ -57,4 +57,10 @@ dependencies {
     // O BoM acima gerencia as versões das bibliotecas abaixo:
     implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.firebase:firebase-analytics")
+
+    // --- NOVAS DEPENDÊNCIAS ---
+    implementation("com.google.firebase:firebase-firestore-ktx") // Para o Firestore
+    implementation("com.google.firebase:firebase-auth-ktx")   // Para Autenticação
+    implementation("com.google.code.gson:gson:2.10.1")       // Para parse de JSO
+
 }

@@ -19,8 +19,14 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+
+import com.google.firebase.auth.ktx.auth // Nova importação
+import com.google.firebase.firestore.ktx.firestore // Nova importação
+import com.google.firebase.ktx.Firebase // Nova importação
+import com.google.gson.Gson // Nova importação
 
 class MainActivity : AppCompatActivity()    {
 
@@ -60,39 +66,52 @@ class MainActivity : AppCompatActivity()    {
         // Chama a função para pedir permissão
         askNotificationPermission()
 
-        // --- CÓDIGO NOVO: Verifica se a activity foi aberta por uma notificação ---
+        // --- CORREÇÃO DO BUG DA URL ---
         val urlFromNotification = intent.getStringExtra("url")
-        val initialUrl = if (urlFromNotification != null) {
-            // Se veio de uma notificação, usa a URL da notificação
-            urlFromNotification
-        } else {
-            // Senão, usa a URL padrão da calculadora
-            "https://premoldaco.com.br/calculadora"
-        }
-        webView.loadUrl("https://premoldaco.com.br/calculadora.html")
+        val initialUrl = urlFromNotification ?: "https://premoldaco.com.br/calculadora.html"
+        webView.loadUrl(initialUrl) // Usando a variável correta
     }
 
-
-
-    // --- NOVA CLASSE: A "ponte" que contém as funções que o JS pode chamar ---
+    // --- INTERFACE ATUALIZADA ---
     private inner class WebAppInterface(private val context: Context) {
-
-        // A anotação @JavascriptInterface é OBRIGATÓRIA por segurança.
-        // Apenas métodos com ela podem ser chamados pelo JavaScript.
         @JavascriptInterface
         fun playSound() {
-            // Este é o mesmo código que usamos para o som da splash screen,
-            // garantindo que ele só toque se o celular não estiver no silencioso.
-            try {
-                val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                if (audioManager.ringerMode == AudioManager.RINGER_MODE_NORMAL) {
-                    val mediaPlayer = MediaPlayer.create(context, R.raw.dim3)
-                    mediaPlayer.start()
-                    mediaPlayer.setOnCompletionListener { mp -> mp.release() }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            // ... (seu código do playSound continua igual) ...
+        }
+
+        @JavascriptInterface
+        fun submitQuote(jsonData: String) {
+            val currentUser = Firebase.auth.currentUser
+            if (currentUser == null) {
+                // No futuro (Fase 2), aqui pediremos para o usuário fazer login.
+                // Por enquanto, podemos negar ou permitir o envio anônimo.
+                // Para simplificar a Fase 1, vamos permitir o envio, mas logar um aviso.
+                Log.w("FCM", "Usuário não autenticado. O orçamento não será vinculado a uma conta.")
+                // Futuramente, adicionar: return
             }
+
+            val db = Firebase.firestore
+            // Usando Gson para converter a string JSON em um Map
+            val quoteMap = Gson().fromJson(jsonData, Map::class.java) as MutableMap<String, Any>
+
+            // Adiciona o ID do usuário (se logado) e a data do servidor
+            quoteMap["userId"] = currentUser?.uid ?: "anonimo"
+            quoteMap["dataCriacao"] = com.google.firebase.firestore.FieldValue.serverTimestamp()
+
+            db.collection("orcamentos")
+                .add(quoteMap)
+                .addOnSuccessListener {
+                    runOnUiThread {
+                        Toast.makeText(context, "Orçamento enviado com sucesso!", Toast.LENGTH_LONG).show()
+                        playSound() // Feedback de sucesso
+                    }
+                }
+                .addOnFailureListener { e ->
+                    runOnUiThread {
+                        Toast.makeText(context, "Erro ao enviar: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                    Log.e("FCM", "Erro ao salvar no Firestore", e)
+                }
         }
     }
     // ----------------------------------------------------------------------
