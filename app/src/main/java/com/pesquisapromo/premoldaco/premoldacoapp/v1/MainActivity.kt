@@ -1,43 +1,56 @@
-// app/src/main/java/com/pesquisapromo/premoldaco.premoldacoapp.v1/MainActivity.kt
 package com.pesquisapromo.premoldaco.premoldacoapp.v1
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.webkit.JavascriptInterface // <-- IMPORTANTE: Nova importação
+import android.util.Log
+import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
-import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.gson.Gson
 
-import com.google.firebase.auth.ktx.auth // Nova importação
-import com.google.firebase.firestore.ktx.firestore // Nova importação
-import com.google.firebase.ktx.Firebase // Nova importação
-import com.google.gson.Gson // Nova importação
-
-class MainActivity : AppCompatActivity()    {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
     private var isWebViewReady = false
+    private var isProcessing: Boolean = false
+    private val auth = Firebase.auth
+    private val db = Firebase.firestore
+
+    private var prefillEmail: String? = null
+    // No futuro, podemos adicionar estes também
+    // private var prefillName: String? = null
+    // private var prefillPhone: String? = null
+
+    private var isPageReadyForPrefill = false // Nova flag de controle
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().apply {
             setKeepOnScreenCondition { !isWebViewReady }
         }
         super.onCreate(savedInstanceState)
+
+        prefillEmail = intent.getStringExtra("USER_EMAIL")
+
         setContentView(R.layout.activity_main)
 
         val onBackPressedCallback = object : OnBackPressedCallback(false) {
@@ -48,86 +61,128 @@ class MainActivity : AppCompatActivity()    {
         onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
 
         webView = findViewById(R.id.webView)
-
         webView.settings.javaScriptEnabled = true
         webView.settings.setSupportMultipleWindows(true)
         webView.settings.javaScriptCanOpenWindowsAutomatically = true
-
-        // --- NOVO CÓDIGO: Conectando a ponte entre JS e Kotlin ---
-        // A linha abaixo "injeta" nossa classe WebAppInterface no JavaScript da WebView.
-        // Dentro do JavaScript, ela será acessível como o objeto "Android".
         webView.addJavascriptInterface(WebAppInterface(this), "Android")
-        // ---------------------------------------------------------
-
-        webView.webViewClient = CustomWebViewClient(onBackPressedCallback)
+        webView.webViewClient = CustomWebViewClient(onBackPressedCallback, prefillEmail)
         webView.webChromeClient = CustomWebChromeClient()
 
-
-        // Chama a função para pedir permissão
         askNotificationPermission()
 
-        // --- CORREÇÃO DO BUG DA URL ---
         val urlFromNotification = intent.getStringExtra("url")
         val initialUrl = urlFromNotification ?: "https://premoldaco.com.br/calculadora.html"
-        webView.loadUrl(initialUrl) // Usando a variável correta
+        webView.loadUrl(initialUrl)
     }
 
-    // --- INTERFACE ATUALIZADA ---
+    // Crie esta NOVA função dentro da MainActivity
+    private fun tryToPrefillData() {
+        // Garante que a operação seja na thread principal
+        runOnUiThread {
+            if (prefillEmail != null && isPageReadyForPrefill) {
+                val escapedEmail = prefillEmail!!.replace("'", "\\'")
+                val script = "javascript:window.preencherDadosUsuario('$escapedEmail', '', '')"
+                webView.evaluateJavascript(script, null)
+                Log.d("Prefill", "Script de pré-preenchimento executado: $script")
+
+                // Limpa para não executar novamente
+                prefillEmail = null
+            }
+        }
+    }
+
+    private fun processQuote(jsonData: String) {
+        val currentUser = auth.currentUser ?: return
+
+        isProcessing = true
+        val quoteMap = Gson().fromJson(jsonData, Map::class.java) as MutableMap<String, Any>
+        quoteMap["userId"] = currentUser.uid
+        quoteMap["dataCriacao"] = FieldValue.serverTimestamp()
+
+        db.collection("orcamentos")
+            .add(quoteMap)
+            .addOnSuccessListener {
+                isProcessing = false
+                runOnUiThread {
+                    Toast.makeText(this, "Orçamento enviado com sucesso!", Toast.LENGTH_LONG).show()
+                    // A linha abaixo pode ser comentada/removida se você não quiser recarregar a página após o envio
+                    // webView.evaluateJavascript("javascript:window.location.reload(true)", null)
+                }
+            }
+            .addOnFailureListener { e ->
+                isProcessing = false
+                runOnUiThread {
+                    Toast.makeText(this, "Erro ao enviar: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+                Log.e("FCM", "Erro ao salvar no Firestore", e)
+            }
+    }
+
     private inner class WebAppInterface(private val context: Context) {
+
+        // Crie esta NOVA função dentro da WebAppInterface
+        @JavascriptInterface
+        fun pageLoaded() {
+            Log.d("WebAppInterface", "JS avisou que a página carregou.")
+            isPageReadyForPrefill = true
+            // Se tivermos dados para preencher, fazemos isso agora.
+            tryToPrefillData()
+        }
+
+
         @JavascriptInterface
         fun playSound() {
-            // ... (seu código do playSound continua igual) ...
+            try {
+                val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                if (audioManager.ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+                    val mediaPlayer = MediaPlayer.create(context, R.raw.dim3)
+                    mediaPlayer.start()
+                    mediaPlayer.setOnCompletionListener { mp -> mp.release() }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
 
         @JavascriptInterface
         fun submitQuote(jsonData: String) {
-            val currentUser = Firebase.auth.currentUser
-            if (currentUser == null) {
-                // No futuro (Fase 2), aqui pediremos para o usuário fazer login.
-                // Por enquanto, podemos negar ou permitir o envio anônimo.
-                // Para simplificar a Fase 1, vamos permitir o envio, mas logar um aviso.
-                Log.w("FCM", "Usuário não autenticado. O orçamento não será vinculado a uma conta.")
-                // Futuramente, adicionar: return
+            if (isProcessing) {
+                runOnUiThread { Toast.makeText(context, "Um envio já está em andamento.", Toast.LENGTH_SHORT).show() }
+                return
             }
 
-            val db = Firebase.firestore
-            // Usando Gson para converter a string JSON em um Map
-            val quoteMap = Gson().fromJson(jsonData, Map::class.java) as MutableMap<String, Any>
-
-            // Adiciona o ID do usuário (se logado) e a data do servidor
-            quoteMap["userId"] = currentUser?.uid ?: "anonimo"
-            quoteMap["dataCriacao"] = com.google.firebase.firestore.FieldValue.serverTimestamp()
-
-            db.collection("orcamentos")
-                .add(quoteMap)
-                .addOnSuccessListener {
-                    runOnUiThread {
-                        Toast.makeText(context, "Orçamento enviado com sucesso!", Toast.LENGTH_LONG).show()
-                        playSound() // Feedback de sucesso
+            val currentUser = auth.currentUser
+            if (currentUser != null) {
+                processQuote(jsonData)
+            } else {
+                isProcessing = true
+                Log.d("AUTH", "Nenhum usuário. Iniciando login anônimo sob demanda...")
+                auth.signInAnonymously().addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d("AUTH", "Login anônimo sob demanda bem-sucedido. Processando orçamento.")
+                        processQuote(jsonData)
+                    } else {
+                        isProcessing = false
+                        runOnUiThread { Toast.makeText(context, "Falha na autenticação inicial. Tente novamente.", Toast.LENGTH_LONG).show() }
+                        Log.w("AUTH", "Falha no login anônimo sob demanda", task.exception)
                     }
                 }
-                .addOnFailureListener { e ->
-                    runOnUiThread {
-                        Toast.makeText(context, "Erro ao enviar: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-                    Log.e("FCM", "Erro ao salvar no Firestore", e)
-                }
+            }
         }
     }
-    // ----------------------------------------------------------------------
 
-
-    private inner class CustomWebViewClient(private val callback: OnBackPressedCallback) : WebViewClient() {
-        // ... seu código do WebViewClient continua o mesmo ...
+    // Modifique o onPageFinished para apenas chamar o tryToPrefillData
+    private inner class CustomWebViewClient(
+        private val callback: OnBackPressedCallback,
+        private var emailToPrefill: String? // Mantemos para receber o dado inicial
+    ) : WebViewClient() {
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
             callback.isEnabled = view?.canGoBack() ?: false
             isWebViewReady = true
-        }
 
-        override fun onReceivedError(view: WebView?, request: android.webkit.WebResourceRequest?, error: android.webkit.WebResourceError?) {
-            super.onReceivedError(view, request, error)
-            isWebViewReady = true
+            tryToPrefillData()
+
         }
 
         override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
@@ -149,7 +204,6 @@ class MainActivity : AppCompatActivity()    {
     }
 
     private inner class CustomWebChromeClient : WebChromeClient() {
-        // ... seu código do WebChromeClient continua o mesmo ...
         override fun onCreateWindow(view: WebView, isDialog: Boolean, isUserGesture: Boolean, resultMsg: android.os.Message?): Boolean {
             val newWebView = WebView(this@MainActivity)
             newWebView.webViewClient = object : WebViewClient() {
@@ -164,20 +218,17 @@ class MainActivity : AppCompatActivity()    {
             return true
         }
     }
+
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        // Aqui você pode tratar se a permissão foi concedida ou não
-    }
+    ) { /* Não fazemos nada com o resultado por enquanto */ }
+
     private fun askNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // TIRAMISU = Android 13
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
                 PackageManager.PERMISSION_GRANTED) {
-                // Pede a permissão
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
     }
-
-
 }

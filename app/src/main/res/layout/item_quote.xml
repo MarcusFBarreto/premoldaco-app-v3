@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/ic_launcher_background"
+    android:backgroundTint="?attr/colorSurfaceContainerHighest">
+
+    <TextView
+        android:id="@+id/tvItemObraName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nome da Obra"
+        android:textStyle="bold"
+        android:textSize="16sp"/>
+
+    <TextView
+        android:id="@+id/tvItemDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="06 de Julho de 2025"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/tvItemStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Status: ENVIADO" />
+
+</LinearLayout>

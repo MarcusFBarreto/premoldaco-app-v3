@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.pesquisapromo.premoldaco.premoldacoapp.v1"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
