@@ -1,3 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- App Name -->
     <string name="app_name">Premoldaço App</string>
+
+    <!-- Welcome Screen -->
+    <string name="welcome_title">Bem-vindo ao Premoldaço App</string>
+    <string name="btn_auth">Entrar ou Registrar</string>
+    <string name="cd_btn_auth">Botão para entrar ou registrar conta</string>
+    <string name="btn_calculator">Calcular Orçamento Agora</string>
+    <string name="cd_btn_calculator">Botão para calcular orçamento sem login</string>
+
+    <!-- Auth Screen -->
+    <string name="hint_email">E-mail</string>
+    <string name="hint_password">Senha</string>
+    <string name="btn_login">Entrar</string>
+    <string name="cd_btn_login">Botão de login</string>
+    <string name="btn_register">Registrar</string>
+    <string name="cd_btn_register">Botão de registro</string>
+
+    <!-- Profile Screen -->
+    <string name="welcome_user">Bem-vindo</string>
+    <string name="no_quotes_message">Nenhum orçamento encontrado.</string>
+    <string name="cd_fab_new_quote">Adicionar novo orçamento</string>
+
+    <!-- Item Layouts (for RecyclerView) -->
+    <string name="item_obra_name">Nome da Obra</string>
+    <string name="item_date">Data</string>
+    <string name="item_status">Status</string>
+    <string name="item_data">Data</string>
+    <string name="item_area">Área Total</string>
+    <string name="cd_chip_status">Status do orçamento</string>
+
+    <!-- Other Common Strings (e.g., Toasts from code) -->
+    <string name="budget_sent_success">Orçamento enviado com sucesso!</string>
+    <string name="budget_send_error">Erro ao enviar: %s</string>
+    <string name="processing_in_progress">Um envio já está em andamento.</string>
+    <string name="auth_failure">Falha na autenticação inicial. Tente novamente.</string>
+    <string name="login_success">Login efetuado com sucesso!</string>
+    <string name="login_failure">Falha no login: %s</string>
+    <string name="register_success">Conta criada com sucesso! Faça o login.</string>
+    <string name="register_failure">Falha no cadastro: %s</string>
+    <string name="fill_fields">Preencha e-mail e senha.</string>
+    <string name="invalid_email_password">Preencha um e-mail válido e uma senha com no mínimo 6 caracteres.</string>
+    <string name="logout_message">Você saiu da sua conta.</string>
+    <string name="link_open_error">Não foi possível abrir o link.</string>
 </resources>

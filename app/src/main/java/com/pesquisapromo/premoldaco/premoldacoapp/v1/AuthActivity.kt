@@ -2,7 +2,6 @@ package com.pesquisapromo.premoldaco.premoldacoapp.v1
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -23,6 +22,7 @@ class AuthActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_PremoldaçoApp) // Mesclagem: Adicionado para evitar crashes de tema
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_auth)
 
@@ -52,7 +52,7 @@ class AuthActivity : AppCompatActivity() {
                         Toast.makeText(this, "Login efetuado com sucesso!", Toast.LENGTH_SHORT).show()
                         navigateToProfile()
                     } else {
-                        Toast.makeText(this, "Falha no login: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "Falha no login: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
         }

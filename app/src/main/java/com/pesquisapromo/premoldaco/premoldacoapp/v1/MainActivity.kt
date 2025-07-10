@@ -14,7 +14,6 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Button
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -42,11 +41,11 @@ class MainActivity : AppCompatActivity() {
 
     private var isPageReadyForPrefill = false // Nova flag de controle
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().apply {
             setKeepOnScreenCondition { !isWebViewReady }
         }
+        setTheme(R.style.Theme_PremoldaçoApp) // Para evitar crashes de tema
         super.onCreate(savedInstanceState)
 
         prefillEmail = intent.getStringExtra("USER_EMAIL")
@@ -75,9 +74,7 @@ class MainActivity : AppCompatActivity() {
         webView.loadUrl(initialUrl)
     }
 
-    // Crie esta NOVA função dentro da MainActivity
     private fun tryToPrefillData() {
-        // Garante que a operação seja na thread principal
         runOnUiThread {
             if (prefillEmail != null && isPageReadyForPrefill) {
                 val escapedEmail = prefillEmail!!.replace("'", "\\'")
@@ -85,7 +82,6 @@ class MainActivity : AppCompatActivity() {
                 webView.evaluateJavascript(script, null)
                 Log.d("Prefill", "Script de pré-preenchimento executado: $script")
 
-                // Limpa para não executar novamente
                 prefillEmail = null
             }
         }
@@ -105,8 +101,6 @@ class MainActivity : AppCompatActivity() {
                 isProcessing = false
                 runOnUiThread {
                     Toast.makeText(this, "Orçamento enviado com sucesso!", Toast.LENGTH_LONG).show()
-                    // A linha abaixo pode ser comentada/removida se você não quiser recarregar a página após o envio
-                    // webView.evaluateJavascript("javascript:window.location.reload(true)", null)
                 }
             }
             .addOnFailureListener { e ->
@@ -120,15 +114,12 @@ class MainActivity : AppCompatActivity() {
 
     private inner class WebAppInterface(private val context: Context) {
 
-        // Crie esta NOVA função dentro da WebAppInterface
         @JavascriptInterface
         fun pageLoaded() {
             Log.d("WebAppInterface", "JS avisou que a página carregou.")
             isPageReadyForPrefill = true
-            // Se tivermos dados para preencher, fazemos isso agora.
             tryToPrefillData()
         }
-
 
         @JavascriptInterface
         fun playSound() {
@@ -171,10 +162,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Modifique o onPageFinished para apenas chamar o tryToPrefillData
     private inner class CustomWebViewClient(
         private val callback: OnBackPressedCallback,
-        private var emailToPrefill: String? // Mantemos para receber o dado inicial
+        private var emailToPrefill: String?
     ) : WebViewClient() {
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
@@ -182,7 +172,6 @@ class MainActivity : AppCompatActivity() {
             isWebViewReady = true
 
             tryToPrefillData()
-
         }
 
         override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {

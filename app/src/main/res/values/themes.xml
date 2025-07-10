@@ -1,17 +1,24 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.PremoldaçoApp" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tema base para o app (light mode) -->
+    <style name="Theme_PremoldaçoApp" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Cores primárias (ex: laranja para branding Premoldaço) -->
+        <item name="colorPrimary">#f67828</item> <!-- Laranja principal -->
+        <item name="colorPrimaryVariant">#E64A19</item> <!-- Variante mais escura -->
+        <item name="colorOnPrimary">#FFFFFF</item> <!-- Texto sobre primary -->
+        <!-- Cores secundárias (ex: verde para ações) -->
+        <item name="colorSecondary">#4CAF50</item>
+        <item name="colorSecondaryVariant">#388E3C</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <!-- Fundo e superfícies claras (fix for colorBackground) -->
+        <item name="android:colorBackground">#FFFFFF</item> <!-- White background for light mode -->
+        <item name="colorSurface">#FAFAFA</item>
+        <item name="colorOnSurface">#000000</item>
+        <!-- Barra de status -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <!-- Splash screen (para Android 12+) -->
+        <item name="android:windowSplashScreenBackground">?attr/colorPrimary</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/logo_splash</item> <!-- Crie esse drawable se necessário -->
+        <item name="android:windowSplashScreenAnimationDuration">300</item>
     </style>
-
-    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">#1d1d1d</item> <item name="windowSplashScreenAnimatedIcon">@drawable/logo_splash</item>
-
-        <item name="windowSplashScreenAnimationDuration">1000</item>
-
-        <item name="postSplashScreenTheme">@style/Theme.PremoldaçoApp</item>
-    </style>
-
-    <style name="Theme.PremoldaçoApp" parent="Base.Theme.PremoldaçoApp" />
 </resources>

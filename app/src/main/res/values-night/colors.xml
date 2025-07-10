@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Cores para status no Chip (dark mode, mais claras para contraste) -->
+    <color name="status_aprovado">#81C784</color> <!-- Verde claro -->
+    <color name="status_cancelado">#E57373</color> <!-- Vermelho claro -->
+    <color name="status_em_analise">#FFB74D</color> <!-- Amarelo claro -->
+    <color name="status_enviado">#64B5F6</color> <!-- Azul claro -->
+</resources>

@@ -12,6 +12,7 @@ class WelcomeActivity : AppCompatActivity() {
     private val auth = Firebase.auth
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_PremoldaçoApp) // Mesclagem: Adicionado para evitar crashes de tema
         super.onCreate(savedInstanceState)
 
         // --- LÓGICA DE DIRECIONAMENTO ---

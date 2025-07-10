@@ -1,49 +1,47 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="32dp"
-    tools:context=".WelcomeActivity">
+    android:background="?android:attr/colorBackground">
 
-    <ImageView
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:src="@drawable/logo_splash"
-        android:contentDescription="Logo da Premoldaço" />
-
+    <!-- Título -->
     <TextView
+        android:id="@+id/tvWelcomeTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Bem-vindo à Premoldaço"
-        android:textSize="22sp"
+        android:text="@string/welcome_title"
+        android:textSize="24sp"
         android:textStyle="bold"
-        android:layout_marginTop="24dp"
-        android:textAlignment="center"/>
+        android:importantForAccessibility="yes"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="64dp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="O que você deseja fazer?"
-        android:textSize="16sp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="48dp"
-        android:textAlignment="center"/>
-
+    <!-- Botão para Auth (fechado corretamente com />) -->
     <Button
         android:id="@+id/btnGoToAuth"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Salvar e Acompanhar Orçamentos (Entrar ou Criar Conta)" />
+        android:text="@string/btn_auth"
+        android:contentDescription="@string/cd_btn_auth"
+        app:layout_constraintTop_toBottomOf="@id/tvWelcomeTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="32dp"
+        android:layout_marginHorizontal="16dp" />
 
+    <!-- Botão para Calculadora (fechado corretamente com />) -->
     <Button
         android:id="@+id/btnGoToCalculator"
-        style="?attr/materialButtonOutlinedStyle"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="Apenas Calcular um Orçamento" />
+        android:text="@string/btn_calculator"
+        android:contentDescription="@string/cd_btn_calculator"
+        app:layout_constraintTop_toBottomOf="@id/btnGoToAuth"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="16dp" />
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

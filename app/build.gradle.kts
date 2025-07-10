@@ -62,5 +62,6 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx") // Para o Firestore
     implementation("com.google.firebase:firebase-auth-ktx")   // Para Autenticação
     implementation("com.google.code.gson:gson:2.10.1")       // Para parse de JSO
+    implementation("com.google.android.material:material:1.12.0") // Latest as of 2025
 
 }

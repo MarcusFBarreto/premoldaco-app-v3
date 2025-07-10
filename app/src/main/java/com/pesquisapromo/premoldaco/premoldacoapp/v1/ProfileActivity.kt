@@ -37,6 +37,7 @@ class ProfileActivity : AppCompatActivity() {
     private var quotesListener: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_PremoldaçoApp) // Mesclagem: Adicionado para evitar crashes de tema
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
         Log.d(TAG, "onCreate: Atividade sendo criada.")
